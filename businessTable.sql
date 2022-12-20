@@ -1,3 +1,5 @@
+/*Brandy Geiger,*/
+
 CREATE TABLE businesses
 (id integer PRIMARY KEY, 
 business varchar,
