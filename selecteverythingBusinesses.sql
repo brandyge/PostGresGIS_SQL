@@ -1,8 +1,8 @@
-SELECT businesses.business, businesses.year_founded, businesses.country_code, businesses.category_code, countries.continent, countries.country, categories.category
-FROM businesses 
+SELECT bus.business, bus.year_founded, bus.country_code, bus.category_code, countries.continent,  countries.country, categories.category
+FROM businesses AS bus
 INNER JOIN countries
-ON businesses.country_code = countries.country_code
+ON bus.country_code = countries.country_code
 INNER JOIN categories 
-ON businesses.category_code = categories.category_code
-ORDER BY businesses.year_founded;
+ON bus.category_code = categories.category_code
+ORDER BY year_founded; 
 
