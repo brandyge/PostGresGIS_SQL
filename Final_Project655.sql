@@ -23,11 +23,32 @@ select * FROM traffic_signalswgs
 select * FROM multiuse_trails_seattle_only
 select * FROM neighborhood_map_wgs
 select * FROM public_feedback
+
+
 --this is just giving me 2 column totals for collisions and total signals
 SELECT COUNT(*) as total_collision, COUNT(DISTINCT traffic_signals.gid) as total_signals 
 FROM collisions 
 JOIN traffic_signals 
 ON collisions.intkey = traffic_signals.intkey;
+
+SELECT column_name, data_type, character_maximum_length
+FROM information_schema.columns
+WHERE table_name = 'seattle_streets'
+AND table_catalog = 'seattle_transportation'
+ORDER BY ordinal_position;
+
+SELECT ST_IsValid(geom)
+FROM seattle_streets;
+
+SELECT ST_IsValid(geom)
+FROM collisions
+ORDER by st_IsValid DESC;
+
+SELECT ST_IsValid(geom)
+FROM collisions2
+ORDER by st_IsValid DESC;
+
+
 ---collisions that occur at each traffic signal
 ---this gives me full geom, total collisions, & total signals. Connected to QGIS to visualize. ITrying to group by geom, & count total number 
 ---I think I can also change this to group my signal_mai in traffic signals -saved as totalcol_sigratio later SENt TO OUTPUT
@@ -44,7 +65,6 @@ WHERE geom IS NULL;
 DELETE FROM collisions2
 WHERE geom IS NULL;
 
-
 select  gid, geom
 FROM collisions2
 ORDER BY geom desc;
@@ -57,8 +77,6 @@ ON ST_DWithin(seattle_streets.geom, collisions2.geom, 0.0001)
 GROUP BY seattle_streets.stname_ord, seattle_streets.unitdesc, seattle_streets.geom
 ORDER BY collision_count DESC
 
-
-
 --find traffic signals with most colliosions. i dropped NULLs- NOT WORKING
 SELECT traffic_signalswgs.compkey, seattle_streets.compkey, traffic_signalswgs.gid
 FROM traffic_signalswgs, seattle_streets
@@ -68,8 +86,6 @@ SELECT seattle_streets.compkey, traffic_signalswgs.gid
 FROM traffic_signalswgs
 JOIN seattle_streets
 ON ST_Intersects(traffic_signalswgs.geom::geometry, seattle_streets.geom::geometry, 1);
-
-
 
 --find out about weather and road conditions SENT to output
 SELECT ROADCOND, geom, WEATHER, COUNT(*) as Frequency
@@ -131,7 +147,6 @@ WHERE ST_Intersects(neighborhood_map_wgs.geom, collisions2.geom)
 GROUP BY neighborhood_map_wgs.s_hood, neighborhood_map_wgs.geom
 ORDER BY collision_count DESC
 
-
 --find neighborhoods that have a multiuse trail running through them---SEND TO OUTPUT
 SELECT neighborhood_map_wgs.s_hood, neighborhood_map_wgs.geom
 FROM neighborhood_map_wgs, multiuse_trails_seattle_only
@@ -139,7 +154,6 @@ WHERE ST_Intersects(neighborhood_map_wgs.geom, multiuse_trails_seattle_only.geom
 GROUP BY neighborhood_map_wgs.s_hood, neighborhood_map_wgs.geom;
 
 --I also want to explore bike paths with collisions--NOT WORKING?? waiting
-
 SELECT multiuse_trails_seattle_only.ord_stname, collisions2.geom
 FROM collisions2
 JOIN multiuse_trails_seattle_only
@@ -150,8 +164,6 @@ SELECT multiuse_trails_seattle_only.ord_stname, multiuse_trails_seattle_only.geo
 FROM multiuse_trails_seattle_only
 JOIN collisions2
 ON ST_DWithin(multiuse_trails_seattle_only.geom, collisions2.geom, 5)
-
-
 
 --trying to index above. However, the query doesnt seem to work still. 
 CREATE INDEX trailsInd
@@ -214,4 +226,26 @@ JOIN neighborhood_map_wgs
 ON public_feedback.s_hood_gid = neighborhood_map_wgs.gid
 JOIN multiuse_trails_seattle
 ON public_feedback.gid = multiuse_trails_seattle.gid;
+	
+--Future considerations
+
+select * FROM seattle_streets
+	
+CREATE TABLE bicycle_accidents (
+  accident_id serial PRIMARY KEY,
+  gid INTEGER REFERENCES seattle_streets(gid),
+  date TIMESTAMP NOT NULL,
+  weather VARCHAR(255) NOT NULL,
+  road_condition VARCHAR(255) NOT NULL,
+  injury_severity VARCHAR(255) NOT NULL,
+  bike_count INTEGER NOT NULL);
+	
+--insert data into the table
+INSERT INTO bicycle_accidents (gid, date, weather, road_condition, injury_severity, bike_count)
+VALUES (1, '2020-01-01 10:00:00', 'rainy', 'wet', 'fatal', 2),
+       (2, '2020-01-02 12:00:00', 'sunny', 'dry', 'serious', 1),
+       (3, '2020-01-03 14:00:00', 'cloudy', 'wet', 'minor', 1);
+
+	
+
 
