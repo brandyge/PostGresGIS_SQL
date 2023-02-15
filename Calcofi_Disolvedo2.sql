@@ -88,6 +88,44 @@ FROM (
 GROUP BY depth_intervals, distance_intervals, lat_dec, lon_dec, geom
 ORDER BY depth_intervals ASC, distance_intervals ASC;
 
+--what is the average o2 concentration at different depths and distances. Maybe graph this? -ArcPro already graphs but this should confirm.
+SELECT depth_intervals, distance_intervals, AVG("O2ml_L") as avg_oxygen_concentration
+FROM (
+SELECT ROUND(negative_r_depth) AS depth_intervals, ROUND(distance) AS distance_intervals, "O2ml_L"
+FROM calcofi_cast
+JOIN bottles ON calcofi_cast.sta_id = bottles.sta_id
+WHERE calcofi_cast.sta_id = '066.7 050.0'
+AND bottles.sta_id = '066.7 050.0'
+AND calcofi_cast.year BETWEEN 1998 AND 2020
+) AS subquery
+GROUP BY depth_intervals, distance_intervals
+ORDER BY depth_intervals ASC, distance_intervals ASC;
+--same as above but geom included
+SELECT depth_intervals, distance_intervals, AVG("O2ml_L") as avg_oxygen_concentration, lat_dec, lon_dec, geom
+FROM (
+SELECT ROUND(negative_r_depth) AS depth_intervals, ROUND(distance) AS distance_intervals, "O2ml_L", lat_dec, lon_dec, geom
+FROM calcofi_cast
+JOIN bottles ON calcofi_cast.sta_id = bottles.sta_id
+WHERE calcofi_cast.sta_id = '066.7 050.0'
+AND bottles.sta_id = '066.7 050.0'
+AND calcofi_cast.year BETWEEN 1998 AND 2020
+) AS subquery
+GROUP BY depth_intervals, distance_intervals, lat_dec, lon_dec, geom
+ORDER BY depth_intervals ASC, distance_intervals ASC;
+--adding month into this question
+SELECT depth_intervals, distance_intervals, AVG("O2ml_L") as avg_oxygen_concentration, month
+FROM (
+SELECT ROUND(negative_r_depth) AS depth_intervals, ROUND(distance) AS distance_intervals, "O2ml_L", month
+FROM calcofi_cast
+JOIN bottles ON calcofi_cast.sta_id = bottles.sta_id
+WHERE calcofi_cast.sta_id = '066.7 050.0'
+AND bottles.sta_id = '066.7 050.0'
+AND calcofi_cast.year BETWEEN 1998 AND 2020
+) AS subquery
+GROUP BY depth_intervals, distance_intervals, month
+ORDER BY depth_intervals ASC, distance_intervals ASC;
+
+
 
 --calculate distint column-IM getting a lot of NULL, not sure but don't use for now
 SELECT DISTINCT ROUND(distance) as distint
